@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+body {
+    background-color: black;
+    color: white;
+    box-sizing: border-box;
+}
+
+.debugBorder {
+    border: 1px solid red;
+}
+
+.btns {
+    @apply rounded w-fit px-2;
+}
