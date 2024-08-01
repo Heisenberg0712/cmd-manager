@@ -59,7 +59,6 @@ export function addTagToTagStore(db, name, color, tagButtonContainer) {
   transaction.oncomplete = (event) => {
     const buttonElement = createNewTag(name, color);
     tagButtonContainer.append(buttonElement);
-    getAllTagsFromTagStore(db);
   };
   transaction.onerror = (error) => {
     console.log("New tag could not be added: transaction failed");
