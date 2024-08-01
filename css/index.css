@@ -14,3 +14,30 @@ body {
 .btns {
     @apply rounded w-fit px-2;
 }
+
+.selected {
+    position: relative;
+    color: white;
+    margin-right: 8px;
+}
+
+.selected::after {
+    content: "";
+    /* Empty string to ensure the pseudo-element is displayed */
+    display: inline-block;
+    /* border: 1px red solid; */
+    /* Ensure it takes up space */
+    width: 20px;
+    /* Adjust width as needed */
+    height: 30px;
+    /* Adjust height as needed */
+    background-image: url('../asset/check.svg');
+    background-size: contain;
+    /* Adjust to cover the entire area */
+    background-repeat: no-repeat;
+    position: absolute;
+    z-index: 1;
+    pointer-events: none;
+    /* Prevent the pseudo-element from interfering with button clicks */
+    /* Adjust position as needed */
+}
