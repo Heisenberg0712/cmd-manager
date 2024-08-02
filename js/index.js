@@ -2,7 +2,7 @@ import { setupDatabase } from "./database.js";
 import {
   setupRequiredEventListeners,
   setupTagAssignContainer,
-} from "./databaseOperation.js";
+} from "./utilityOperation.js";
 import { setupTagAdditionContainer } from "./tag.js";
 
 console.log("Hello world");
