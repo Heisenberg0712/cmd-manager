@@ -4,6 +4,10 @@ let selectedTags = [];
 let commandsList = [];
 let filteredCommandsListViaTag = [];
 let filteredCommandsListViaText = [];
+export function setupCommandAdditionContainer(db) {
+  const transaction = db.transaction(["CommandStore"], "readwrite");
+  const commandStoreObject = transaction;
+}
 
 export function setupRequiredEventListeners(db) {
   let newCommandName = "";
@@ -39,7 +43,6 @@ function showCommandsFromCommandList() {
   for (var i = 0; i < commandsToBeShown.length; i++) {
     createCommandEntry(commandsToBeShown[i].command, commandsToBeShown[i].tags);
   }
-  attachCopyToClipboardEventListener();
 }
 
 function getCommandsToBeShown() {
@@ -82,27 +85,6 @@ function removeSelectedFromTags() {
   }
 
   // const tagButtonList = tagButtonContainer.
-}
-export function attachCopyToClipboardEventListener() {
-  const commandListUL = document.getElementById("commandList");
-  const listItemsArray = commandListUL.children;
-  for (var i = 0; i < listItemsArray.length; i++) {
-    if (listItemsArray[i].nodeName === "LI") {
-      const listItems = listItemsArray[i].children;
-      for (var k = 0; k < listItems.length; k++) {
-        if (listItems[k].nodeName === "svg") {
-          const svgElement = listItems[k];
-          svgElement.addEventListener("click", () => {
-            let textToBeCopiedElement = listItems[0];
-
-            navigator.clipboard.writeText(textToBeCopiedElement.textContent);
-            alert("Text copied");
-          });
-        }
-      }
-    }
-  }
-  console.log(commandListUL);
 }
 export function setupTagAssignContainer() {
   const tagButtonContainer = document.getElementById("tagButtonContainer");
