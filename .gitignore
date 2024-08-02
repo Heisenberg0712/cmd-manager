@@ -1,7 +1,7 @@
 node_modules/
 npm-debug.log
 .DS_Store
-.exe
+*.exe
 # dotenv environment variables file
 .env*
 .env.test
