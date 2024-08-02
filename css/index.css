@@ -41,3 +41,7 @@ body {
     /* Prevent the pseudo-element from interfering with button clicks */
     /* Adjust position as needed */
 }
+
+.tooltip:hover {
+    cursor: pointer;
+}
