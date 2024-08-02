@@ -2,6 +2,9 @@ import { getCopyToClipboardSvg } from "./svgutil.js";
 
 let selectedTags = [];
 let commandsList = [];
+let filteredCommandsList = [];
+let filteredCommandsListViaTag = [];
+let filteredCommandsListViaText = [];
 export function setupCommandAdditionContainer(db) {
   const transaction = db.transaction(["CommandStore"], "readwrite");
   const commandStoreObject = transaction;
@@ -14,12 +17,14 @@ export function setupRequiredEventListeners(db) {
   loadAllCommandForUi(db);
   addCommandInput.addEventListener("input", (e) => {
     newCommandName = e.target.value;
+    searchViaText(newCommandName);
   });
   addCommandBtn.addEventListener("click", () => {
     if (newCommandName.length > 0) {
       addCommand(db, newCommandName);
       addCommandInput.value = "";
       removeSelectedFromTags();
+      filteredCommandsList = [];
     }
   });
 }
@@ -29,15 +34,41 @@ function loadAllCommandForUi(db) {
   commandData.onsuccess = (event) => {
     commandsList = commandData.result;
     console.log(commandData);
-    showCommandsFromCommandList(commandData.result);
+    showCommandsFromCommandList();
   };
 }
 
-function showCommandsFromCommandList(commandListIn) {
+function showCommandsFromCommandList() {
   clearAllCommandEntry();
-  for (var i = 0; i < commandListIn.length; i++) {
-    createCommandEntry(commandListIn[i].command, commandListIn[i].tags);
+  let commandsToBeShown = getCommandsToBeShown();
+  for (var i = 0; i < commandsToBeShown.length; i++) {
+    createCommandEntry(commandsToBeShown[i].command, commandsToBeShown[i].tags);
   }
+}
+
+function getCommandsToBeShown() {
+  if (
+    filteredCommandsListViaTag.length == 0 &&
+    filteredCommandsListViaText.length == 0
+  ) {
+    return commandsList;
+  }
+  if (filteredCommandsListViaTag.length == 0) {
+    return filteredCommandsListViaText;
+  }
+  if (filteredCommandsListViaText.length == 0) {
+    return filteredCommandsListViaTag;
+  }
+  return commandsList.filter((commandInfo) => {
+    return (
+      filteredCommandsListViaText.some(
+        (viaText) => viaText.command === commandInfo.command
+      ) &&
+      filteredCommandsListViaTag.some(
+        (viaTag) => viaTag.command === commandInfo.command
+      )
+    );
+  });
 }
 
 function getAllCommandsFromDb(db) {
@@ -89,11 +120,11 @@ export function setupTagAssignContainer() {
 
 function searchViaTags(selectedTagsIn) {
   if (selectedTagsIn.length == 0) {
-    showCommandsFromCommandList(commandsList);
+    filteredCommandsListViaTag = [];
+    showCommandsFromCommandList();
     return;
   }
   let relevantCommandsList = [];
-
   for (var i = 0; i < selectedTagsIn.length; i++) {
     const tagInfo = selectedTagsIn[i];
     const filteredCommands = commandsList.filter((commandInfo) => {
@@ -112,7 +143,21 @@ function searchViaTags(selectedTagsIn) {
     });
     relevantCommandsList = [...relevantCommandsList, ...filteredCommands];
   }
-  showCommandsFromCommandList(relevantCommandsList);
+  filteredCommandsListViaTag = relevantCommandsList;
+  showCommandsFromCommandList();
+}
+
+function searchViaText(inputValue) {
+  if (inputValue.length == 0) {
+    filteredCommandsListViaText = [];
+    showCommandsFromCommandList();
+    return;
+  }
+  filteredCommandsListViaText = commandsList.filter((commandInfo) => {
+    return commandInfo.command.includes(inputValue);
+  });
+
+  showCommandsFromCommandList();
 }
 
 function addCommand(db, commandName) {
