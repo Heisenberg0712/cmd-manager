@@ -2,7 +2,7 @@ let db = null;
 
 export function setupDatabase() {
   const databaseConnection = window.indexedDB.open("cmdManager", 1);
-  console.log("opening a database connection");
+
   let database;
   databaseConnection.onupgradeneeded = (event) => {
     database = event.target.result;

@@ -32,7 +32,7 @@ function loadAllCommandForUi(db) {
   const commandData = getAllCommandsFromDb(db);
   commandData.onsuccess = (event) => {
     commandsList = commandData.result;
-    console.log(commandData);
+
     showCommandsFromCommandList();
   };
 }
@@ -84,7 +84,6 @@ function removeSelectedFromTags() {
     tagButton.classList.remove("selected");
   }
 
-  console.log(tagButtonContainer);
   // const tagButtonList = tagButtonContainer.
 }
 export function setupTagAssignContainer() {
@@ -109,10 +108,9 @@ export function setupTagAssignContainer() {
           tagText: tagText,
           color: tagButton.style.backgroundColor,
         });
-        //console.log(event.target.style);
+
         searchViaTags(selectedTags);
       }
-      console.log(selectedTags);
     }
   });
 }
