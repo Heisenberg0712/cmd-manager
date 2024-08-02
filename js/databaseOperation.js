@@ -1,6 +1,7 @@
 import { getCopyToClipboardSvg } from "./svgutil.js";
 
 let selectedTags = [];
+let commandsList = [];
 export function setupCommandAdditionContainer(db) {
   const transaction = db.transaction(["CommandStore"], "readwrite");
   const commandStoreObject = transaction;
@@ -17,6 +18,8 @@ export function setupRequiredEventListeners(db) {
   addCommandBtn.addEventListener("click", () => {
     if (newCommandName.length > 0) {
       addCommand(db, newCommandName);
+      addCommandInput.value = "";
+      removeSelectedFromTags();
     }
   });
 }
@@ -24,11 +27,17 @@ export function setupRequiredEventListeners(db) {
 function loadAllCommandForUi(db) {
   const commandData = getAllCommandsFromDb(db);
   commandData.onsuccess = (event) => {
-    const commandDataArray = commandData.result;
-    for (var i = 0; i < commandDataArray.length; i++) {
-      createCommandEntry(commandDataArray[i].command, commandDataArray[i].tags);
-    }
+    commandsList = commandData.result;
+    console.log(commandData);
+    showCommandsFromCommandList(commandData.result);
   };
+}
+
+function showCommandsFromCommandList(commandListIn) {
+  clearAllCommandEntry();
+  for (var i = 0; i < commandListIn.length; i++) {
+    createCommandEntry(commandListIn[i].command, commandListIn[i].tags);
+  }
 }
 
 function getAllCommandsFromDb(db) {
@@ -37,7 +46,17 @@ function getAllCommandsFromDb(db) {
   const commandData = commandStoreObject.getAll();
   return commandData;
 }
+function removeSelectedFromTags() {
+  const tagButtonContainer = document.getElementById("tagButtonContainer");
+  const tagButtonList = tagButtonContainer.children;
+  for (var i = 0; i < tagButtonList.length; i++) {
+    let tagButton = tagButtonList[i];
+    tagButton.classList.remove("selected");
+  }
 
+  console.log(tagButtonContainer);
+  // const tagButtonList = tagButtonContainer.
+}
 export function setupTagAssignContainer() {
   const tagButtonContainer = document.getElementById("tagButtonContainer");
   tagButtonContainer.addEventListener("click", (event) => {
@@ -53,7 +72,7 @@ export function setupTagAssignContainer() {
         if (indexToRemove !== -1) {
           selectedTags.splice(indexToRemove, 1);
         }
-        searchViaTags();
+        searchViaTags(selectedTags);
       } else {
         tagButton.classList.add("selected");
         selectedTags.push({
@@ -61,14 +80,40 @@ export function setupTagAssignContainer() {
           color: tagButton.style.backgroundColor,
         });
         //console.log(event.target.style);
-        searchViaTags();
+        searchViaTags(selectedTags);
       }
       console.log(selectedTags);
     }
   });
 }
 
-function searchViaTags() {}
+function searchViaTags(selectedTagsIn) {
+  if (selectedTagsIn.length == 0) {
+    showCommandsFromCommandList(commandsList);
+    return;
+  }
+  let relevantCommandsList = [];
+
+  for (var i = 0; i < selectedTagsIn.length; i++) {
+    const tagInfo = selectedTagsIn[i];
+    const filteredCommands = commandsList.filter((commandInfo) => {
+      var exist = false;
+      for (var i = 0; i < commandInfo.tags.length; i++) {
+        if (commandInfo.tags[i].tagText === tagInfo.tagText) {
+          let index = relevantCommandsList.findIndex(
+            (relevantCommandElement) =>
+              relevantCommandElement.command === commandInfo.command
+          );
+          exist = index == -1 ? true : false;
+          break;
+        }
+      }
+      return exist;
+    });
+    relevantCommandsList = [...relevantCommandsList, ...filteredCommands];
+  }
+  showCommandsFromCommandList(relevantCommandsList);
+}
 
 function addCommand(db, commandName) {
   commandName = commandName.trim();
@@ -82,6 +127,7 @@ function addCommand(db, commandName) {
   });
   request.onsuccess = (e) => {
     createCommandEntry(commandName, selectedTags);
+    loadAllCommandForUi(db);
     console.log("Command stored successfuly");
   };
   request.onerror = (e) => {
@@ -90,7 +136,8 @@ function addCommand(db, commandName) {
 }
 
 function createCommandEntry(commandName, relatedTags) {
-  const commandList = document.getElementById("commandList");
+  const commandListUL = document.getElementById("commandList");
+
   const listItem = document.createElement("li");
   listItem.className = "box-content flex w-4/5 m-auto justify-between my-3";
   const commandSpan = document.createElement("span");
@@ -108,7 +155,14 @@ function createCommandEntry(commandName, relatedTags) {
   }
   listItem.append(tagFlairDiv);
   listItem.append(getCopyToClipboardSvg());
-  commandList.append(listItem);
+  commandListUL.prepend(listItem);
+}
+
+function clearAllCommandEntry() {
+  const commandListULTag = document.getElementById("commandList");
+  while (commandListULTag.firstChild) {
+    commandListULTag.removeChild(commandListULTag.firstChild);
+  }
 }
 
 function calculateTagValue() {
