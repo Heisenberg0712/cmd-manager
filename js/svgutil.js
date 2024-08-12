@@ -8,6 +8,7 @@ export function getCopyToClipboardSvg() {
   svgElement.setAttribute("stroke", "currentColor");
   svgElement.classList.add("size-6");
   svgElement.classList.add("tooltip");
+  svgElement.classList.add("m-auto");
 
   // Create the path element
   const pathElement = document.createElementNS(svgNS, "path");

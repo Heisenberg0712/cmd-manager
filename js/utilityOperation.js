@@ -18,23 +18,20 @@ export function setupRequiredEventListeners(db) {
     newCommandName = e.target.value;
     searchViaText(newCommandName);
   });
-  addCommandBtn.addEventListener("click", () => {
+  addCommandBtn.addEventListener("click", async () => {
     if (newCommandName.length > 0) {
       addCommand(db, newCommandName);
       addCommandInput.value = "";
       removeSelectedFromTags();
-      filteredCommandsList = [];
+      await loadAllCommandForUi(db);
     }
   });
 }
 
-function loadAllCommandForUi(db) {
-  const commandData = getAllCommandsFromDb(db);
-  commandData.onsuccess = (event) => {
-    commandsList = commandData.result;
-
-    showCommandsFromCommandList();
-  };
+async function loadAllCommandForUi(db) {
+  const commandData = await getAllCommandsFromDb(db);
+  commandsList = commandData;
+  showCommandsFromCommandList();
 }
 
 function showCommandsFromCommandList() {
@@ -71,11 +68,18 @@ function getCommandsToBeShown() {
   });
 }
 
-function getAllCommandsFromDb(db) {
-  const transaction = db.transaction(["CommandStore"], "readonly");
-  const commandStoreObject = transaction.objectStore("CommandStore");
-  const commandData = commandStoreObject.getAll();
-  return commandData;
+async function getAllCommandsFromDb(db) {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(["CommandStore"], "readonly");
+    const commandStoreObject = transaction.objectStore("CommandStore");
+    const commandData = commandStoreObject.getAll();
+    commandData.onsuccess = function (event) {
+      resolve(commandData.result);
+    };
+    commandData.onerror = function (event) {
+      reject(commandData.result);
+    };
+  });
 }
 function removeSelectedFromTags() {
   const tagButtonContainer = document.getElementById("tagButtonContainer");
@@ -84,7 +88,9 @@ function removeSelectedFromTags() {
     let tagButton = tagButtonList[i];
     tagButton.classList.remove("selected");
   }
-
+  selectedTags = [];
+  filteredCommandsListViaTag = [];
+  filteredCommandsListViaText = [];
   // const tagButtonList = tagButtonContainer.
 }
 
@@ -204,7 +210,8 @@ function createCommandEntry(commandName, relatedTags) {
   const commandListUL = document.getElementById("commandList");
 
   const listItem = document.createElement("li");
-  listItem.className = "box-content flex w-4/5 m-auto justify-between my-3";
+  listItem.className =
+    "box-content flex w-4/5 m-auto justify-between my-3 px-2 border rounded border-neutral-700 hover:bg-neutral-700 hover:border-neutral-500";
   const commandSpan = document.createElement("span");
   commandSpan.classList = "w-1/2";
   commandSpan.innerHTML = commandName;

@@ -42,6 +42,12 @@ body {
     /* Adjust position as needed */
 }
 
+
+/* .box-content {
+    border: 1px solid red;
+    z-index: 100;
+} */
+
 .tooltip:hover {
     cursor: pointer;
 }
